@@ -11,11 +11,11 @@ require('dotenv').config();
 
 // Remote MySQL defaults (Zeabur). Override via MYSQL_* env vars if needed.
 const DEFAULT_DB = {
-  host: '150.109.72.98',
-  port: 30170,
+  host: 'hkg1.clusters.zeabur.com',
+  port: 31522,
   user: 'root',
-  password: '9Ff2TP786Wx4gIy0Q5GSEc1bBa3mRrw',
-  database: 'blackchain'
+  password: 'icaPx7f1lO4DWZ2s6j3B809FNoRYK5ry',
+  database: 'zeabur'
 };
 
 function isoDateUTC(ts) { return new Date(ts).toISOString().slice(0,10); }
