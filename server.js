@@ -9,12 +9,12 @@ const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config();
 
-// Local development defaults (use env vars in production)
+// Remote MySQL defaults (Zeabur). Override via MYSQL_* env vars if needed.
 const DEFAULT_DB = {
-  host: '127.0.0.1',
-  port: 3306,
+  host: '150.109.72.98',
+  port: 30170,
   user: 'root',
-  password: '',
+  password: '9Ff2TP786Wx4gIy0Q5GSEc1bBa3mRrw',
   database: 'blackchain'
 };
 
