@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>更多新聞</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="news-page">
+  <div class="content">
+    <h2 id="title">更多新聞</h2>
+    <div id="list"></div>
+  </div>
+  <script>
+    async function fetchJson(url) { const r = await fetch(url); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+    function formatTime(ts){try{return new Date(ts).toLocaleString();}catch{return ''}}
+    (async () => {
+      const url = new URL(location.href);
+      const tag = (url.searchParams.get('tag')||'').toUpperCase();
+      document.getElementById('title').textContent = `更多 ${tag} 新聞`;
+      const res = await fetchJson('/api/news?limit=200&grouped=1');
+      const grouped = res.data || {};
+      let list = [];
+      if (tag === 'OTHER') list = grouped.OTHER || [];
+      else list = grouped[tag] || [];
+      const filtered = list.slice(0,50);
+      const html = filtered.map(n => {
+        const t = formatTime(n.ts);
+        return `<div style="padding:6px 0;border-bottom:1px solid #eee;">
+          <div><a href="${n.link}" target="_blank" rel="noreferrer">${n.title}</a></div>
+          <div style="color:#666;font-size:12px;">${n.source} · ${t}</div>
+          <div style="color:#444;font-size:13px;">${n.summary||''}</div>
+        </div>`;
+      }).join('');
+      document.getElementById('list').innerHTML = html || '暫無資料';
+    })();
+  </script>
+</body>
+</html>

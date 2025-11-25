@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title> Dashboard</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/index.html">Dashboard</a>
+      
+      <button id="guideToggle" style="margin-left:8px;">開啟教學模式</button>
+    </nav>
+  </header>
+
+  <main class="grid">
+    <section class="chart">
+      <div class="toolbar">
+        <select id="symbol">
+          <option>BTC</option>
+          <option>ETH</option>
+          <option>ADA</option>
+          <option>CRO</option>
+          <option>PEPE</option>
+          <option>LUNC</option>
+          <option>TRX</option>
+          <option>SNEK</option>
+        </select>
+        <select id="interval">
+          <option value="1h">1h（時）</option>
+          <option value="4h">4h</option>
+          <option value="1d" selected>1d（日）</option>
+          <option value="1w">1w（週）</option>
+        </select>
+        <select id="currency">
+          <option value="USD" selected>USD</option>
+          <option value="TWD">TWD</option>
+        </select>
+      </div>
+      <div class="toolbar" style="margin-top:6px; gap:12px;">
+        <label><input type="checkbox" id="togglePivot" checked /> Pivot</label>
+        <label><input type="checkbox" id="toggleSwing" checked /> Swing</label>
+        <label><input type="checkbox" id="toggleVbp" checked /> VBP</label>
+      </div>
+      <div class="note" id="noteChart">
+        教你看這張圖：
+        <ol>
+          <li>藍線/綠線/橘線是不同方法算出的支撐/壓力（Pivot/Swing/VBP）。</li>
+          <li>右上角儀表的 p_up 表示未來一段時間「上漲機率」。</li>
+          <li>先找最近的壓力（上方）與支撐（下方），再決定 TP/SL。</li>
+        </ol>
+      </div>
+      <div id="kchart" style="width:100%;height:480px;"></div>
+    </section>
+    <aside class="side">
+      <div id="livebar" class="livebar">--</div>
+      <div class="gauge">
+        <h3>上漲/下跌機率</h3>
+        <div id="gauge"></div>
+        <div id="verdict" class="badge">--</div>
+      </div>
+      <div class="gauge">
+        <h3>市場情緒（恐懼 / 貪婪）</h3>
+        <div id="fngGauge" style="width:100%; height:180px;"></div>
+        <div id="fngBadge" class="badge">--</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">活躍地址</div>
+          <div class="card-value" id="active_addr">--</div>
+        </div>
+        <div class="card">
+          <div class="card-title">淨流</div>
+          <div class="card-value" id="stable_netflow">--</div>
+        </div>
+        <div class="card">
+          <div class="card-title">鯨魚轉帳</div>
+          <div class="card-value" id="whale_tx">--</div>
+        </div>
+      </div>
+
+      <div class="gauge" style="margin-top:8px;">
+        <h3>錢包建議</h3>
+        <div class="note">用你的地址讀取持倉，給每個幣「加倉/了結/觀望」建議（純教育用途）。</div>
+        <div class="toolbar" style="padding:0;gap:6px;">
+          <select id="walletChain">
+            <option value="eth">ETH</option>
+            <option value="btc">BTC</option>
+            <option value="ada">ADA</option>
+            <option value="cronos">Cronos</option>
+          </select>
+          <input id="walletAddress" type="text" placeholder="輸入錢包地址" style="flex:1; padding:6px 8px;" />
+          <button id="walletCheck" style="padding:6px 10px;">查詢</button>
+        </div>
+        <div id="walletHoldings" style="margin-top:8px;font-size:13px;color:#444;"></div>
+        <div id="walletAdvice" style="margin-top:8px;font-size:13px;color:#222;"></div>
+      </div>
+
+    </aside>
+  </main>
+
+  
+
+  
+    <section id="coach" style="padding-top:0;">
+      <div class="gauge">
+        <h2>初學者模式</h2>
+        <div class="note">三步驟：1. 看方向與價帶 → 2. 設定 TP/SL → 3. 用定投/模擬下單練習進出。</div>
+        <div id="beginnerSummary">--</div>
+
+        <h2 style="margin-top:12px;">一鍵交易計畫 <span class="badge" id="planSide">--</span></h2>
+        <div class="note">這裡自動用最近的壓力/支撐當作 TP/SL 提示：TP1 近、命中率較高；TP2 遠、獲利較大。</div>
+        <div class="cards" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+          <div class="card">
+            <div class="card-title">進場</div>
+            <div class="card-value" id="planEntry">--</div>
+          </div>
+          <div class="card">
+            <div class="card-title">低風險獲利價位（TP1）</div>
+            <div class="card-value" id="planTP1">--</div>
+          </div>
+          <div class="card">
+            <div class="card-title">高風險獲利價位（TP2）</div>
+            <div class="card-value" id="planTP2">--</div>
+          </div>
+          <div class="card">
+            <div class="card-title">停損</div>
+            <div class="card-value" id="planSL">--</div>
+          </div>
+        </div>
+
+      <div class="coach-grid">
+        <div class="gauge" style="margin-top:12px;">
+          <h2>推薦購買清單（每日10筆）</h2>
+          <div class="note">我們每天從前 250 大中篩選「動能、成交比、市值規模」綜合分數前 10 名，僅供學習觀察。</div>
+          <div id="recomList" style="font-size:14px; line-height:1.5;"></div>
+        </div>
+
+        <div class="gauge collapsed" id="gaugePaper" style="margin-top:12px;">
+          <h2>模擬下單（紙上交易） <button class="collapse-toggle" data-target="gaugePaper">展開</button></h2>
+          <div class="gauge-body">
+            <div class="note">不連交易所、純練習：以現價建倉，達到 TP 就平倉、或手動平倉，累積你的勝率與 RR。</div>
+            <div class="controls" style="margin:6px 0 8px;">
+              <label>房間代碼（可選）<input id="paperRoom" type="text" placeholder="例如 family" style="width:160px; margin-left:6px;" /></label>
+              <button id="roomApply" class="btn">套用</button>
+              <button id="roomClear" class="btn">清除</button>
+              <span style="font-size:12px; color:#6b7280;">同一房間的人會看到同一份模擬單；不填代表共用。</span>
+            </div>
+            <div class="controls" style="margin-bottom:8px;">
+              <div class="seg" id="paperViewSeg">
+                <button data-view="all" class="active">全部</button>
+                <button data-view="open">未平倉</button>
+                <button data-view="closed">已平倉</button>
+              </div>
+              <div style="flex:1"></div>
+              <select id="paperSide"><option value="long">做多</option><option value="short">做空</option></select>
+              <input id="paperAmount" type="number" placeholder="購買金額" style="width:140px;" />
+              <input id="paperTP" type="number" placeholder="獲利價位（選填）" style="width:140px;" />
+              <input id="paperSL" type="number" placeholder="停損點（選填）" style="width:140px;" />
+              <button id="paperOpenBtn" class="btn primary">建倉</button>
+            </div>
+            <div style="overflow:auto;">
+              <table class="table" id="paperTable">
+                <thead>
+                  <tr>
+                    <th>幣別</th>
+                    <th>方向</th>
+                    <th class="num">進場</th>
+                    <th class="num">最新/平倉價</th>
+                    <th class="num">損益</th>
+                    <th>時間</th>
+                    <th>動作</th>
+                  </tr>
+                </thead>
+                <tbody id="paperBody"></tbody>
+              </table>
+            </div>
+            <div id="paperSpark" class="sparkline"></div>
+          </div>
+        </div>
+
+        <div class="gauge" style="margin-top:12px;">
+          <h2>定投（DCA）</h2>
+          <div class="note">輸入頻率與每期金額，快速看「平均成本、目前市值與報酬率」。用來對比一次性買入。</div>
+          <div class="controls">
+            <label>期數<input id="dcaPeriods" type="number" value="12" style="width:120px; margin-left:6px;" /></label>
+            <label>每期金額（USD）<input id="dcaAmount" type="number" value="100" style="width:140px; margin-left:6px;" /></label>
+            <label>頻率<select id="dcaFreq" style="width:120px; margin-left:6px;"><option value="1w">每週</option><option value="1d">每日</option><option value="1m">每月</option></select></label>
+            <button id="dcaBtn" class="btn">計算</button>
+          </div>
+          <div class="kpis">
+            <div class="kpi"><div class="label">平均成本</div><div class="value" id="dcaAvg">--</div></div>
+            <div class="kpi"><div class="label">累計投入</div><div class="value" id="dcaInvested">--</div></div>
+            <div class="kpi"><div class="label">目前市值</div><div class="value" id="dcaValue">--</div></div>
+            <div class="kpi"><div class="label">報酬率</div><div class="value" id="dcaReturn">--</div></div>
+          </div>
+          <div id="dcaResult" style="font-size:13px; line-height:1.5;">--</div>
+        </div>
+
+        <div class="gauge collapsed" id="gaugePerf" style="margin-top:12px;">
+          <h2>成效回饋 <button class="collapse-toggle" data-target="gaugePerf">展開</button></h2>
+          <div class="gauge-body">
+            <div class="note">用你的模擬單統計勝率、總損益與最大回撤。穩定 >60% 勝率、RR >1.5 代表策略較穩健。</div>
+            <div class="kpis">
+              <div class="kpi"><div class="label">勝率</div><div class="value" id="perfWin">--</div></div>
+              <div class="kpi"><div class="label">總損益</div><div class="value" id="perfPnl">--</div></div>
+              <div class="kpi"><div class="label">交易數</div><div class="value" id="perfTrades">--</div></div>
+              <div class="kpi"><div class="label">最大回撤</div><div class="value" id="perfMdd">--</div></div>
+            </div>
+            <div id="perfSpark" class="sparkline"></div>
+            <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <h3 class="section-title">更多細節</h3>
+                <table class="table" id="perfDetails"></table>
+              </div>
+              <div>
+                <h3 class="section-title">幣別/方向分佈</h3>
+                <table class="table" id="perfBreakdown"></table>
+              </div>
+            </div>
+            <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <h3 class="section-title">每月損益</h3>
+                <table class="table" id="perfMonthly"></table>
+              </div>
+              <div>
+                <h3 class="section-title">最佳/最差交易</h3>
+                <table class="table" id="perfLeaders"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+    </section>
+
+    <section id="news" style="padding-top:0;">
+      <div class="gauge">
+        <h2>最新消息</h2>
+        <div class="note">只顯示 BTC/ETH/ADA/CRO 相關新聞。點「View more」看更多。</div>
+        <div id="newsList" style="font-size:14px; line-height:1.5;"> </div>
+      </div>
+
+      <div class="cards" style="margin-top:12px;">
+        <div class="gauge">
+          <h2>Top 100</h2>
+          <div class="note">按市值排行，切換幣別看當地貨幣價格。每頁 10 筆，可翻頁。</div>
+          <div class="toolbar" style="gap:8px; padding:0;">
+            <button id="topPrev">上一頁</button>
+            <span id="topPage">1 / 10</span>
+            <button id="topNext">下一頁</button>
+          </div>
+          <div id="toplist" style="font-size:14px; line-height:1.5;"></div>
+        </div>
+
+        <div class="gauge">
+          <h2>漲幅 Top 100</h2>
+          <div class="note">前 24 小時漲幅最大，適合找強勢幣做觀察。請搭配價帶與機率，不要追高。</div>
+          <div class="toolbar" style="gap:8px; padding:0;">
+            <button id="gainPrev">上一頁</button>
+            <span id="gainPage">1 / 10</span>
+            <button id="gainNext">下一頁</button>
+          </div>
+          <div id="gainlist" style="font-size:14px; line-height:1.5;"></div>
+        </div>
+      </div>
+
+      <div class="gauge" style="margin-top:12px;">
+        <h2>全鏈概覽</h2>
+        <div class="note">彙整目前支援幣別的關鍵鏈上數據（最新一筆）。</div>
+        <div id="allChains" style="display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:8px;"></div>
+      </div>
+
+      
+
+    </section>
+  </div>
+
+  <div class="content" style="margin-top:16px;">
+    <section>
+      <div class="gauge">
+        <h2 id="rainbowTitle">彩虹圖（BTC）</h2>
+        <div class="note">長期對數回歸帶（本頁動態繪製）。</div>
+        <div id="rainbowBox" style="width:100%; height:640px; background:#fff; border:1px solid #eee; overflow:hidden;">
+          <div id="rainbowChart" style="width:100%; height:100%;"></div>
+        </div>
+        <div id="rainbowPlaceholder" style="display:none; padding:12px; color:#555; font-size:13px; border:1px dashed #ddd; background:#fafafa;">目前僅提供 BTC 彩虹圖。</div>
+        <div id="rainbowRanges" style="margin-top:8px; font-size:13px; color:#374151;"></div>
+        <div id="rainbowExplain" style="margin-top:6px; font-size:12px; color:#555; line-height:1.6;">
+          顏色區間說明：
+          <div style="display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:8px; margin-top:6px;">
+            <div><span style="display:inline-block;width:10px;height:10px;background:#7e57c2;margin-right:6px;border-radius:2px;"></span>極度低估（長期便宜區）</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#42a5f5;margin-right:6px;border-radius:2px;"></span>低估（逢低佈局）</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#66bb6a;margin-right:6px;border-radius:2px;"></span>略低估（偏多觀察）</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#ffd400;margin-right:6px;border-radius:2px;"></span>合理價（中性區）</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#ffaa00;margin-right:6px;border-radius:2px;"></span>偏高（審慎）</div>
+            <div><span style="display:inline-block;width:10px;height:10px;background:#ff7f00;margin-right:6px;border-radius:2px;"></span>過熱（減碼/風險高）</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/main.js"></script>
+  <script>
+    (function(){
+      const btn = document.getElementById('guideToggle');
+      btn.addEventListener('click', () => {
+        document.body.classList.toggle('guide');
+        btn.classList.toggle('active');
+        btn.textContent = document.body.classList.contains('guide') ? '關閉教學模式' : '開啟教學模式';
+      });
+    })();
+  </script>
+</body>
+</html> 

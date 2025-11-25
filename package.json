@@ -1,0 +1,27 @@
+{
+  "name": "blackchain",
+  "version": "0.1.0",
+  "private": true,
+  "main": "server.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "db:setup": "node scripts/db_setup.js"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "morgan": "^1.10.1",
+    "mysql2": "^3.14.3",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
